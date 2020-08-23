@@ -36,6 +36,17 @@ kubectl flame mypod -t 1m -f /tmp/flamegraph.svg mycontainer
 ```
 
 ## Installing
+
+### Krew
+
+You can install `kubectl flame` using the [Krew](https://github.com/kubernetes-sigs/krew), the package manager for kubectl plugins.
+
+Once you have [Krew installed](https://krew.sigs.k8s.io/docs/user-guide/setup/install/) just run:
+
+```bash
+kubectl krew install flame
+```
+
 ### Pre-built binaries
 See the release page for the full list of pre-built assets.
 
