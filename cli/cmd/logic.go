@@ -17,6 +17,7 @@ import (
 
 func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlags) {
 	ns, err := kubernetes.Connect(configFlags)
+	p := NewPrinter(target.DryRun)
 	if err != nil {
 		fmt.Printf("Failed connecting to kubernetes cluster: %v\n", err)
 		os.Exit(1)
@@ -24,55 +25,59 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 
 	target.Namespace = ns
 	ctx := context.Background()
-	fmt.Print("Verifying target pod ... ")
+	p.Print("Verifying target pod ... ")
 	pod, err := kubernetes.GetPodDetails(target.PodName, target.Namespace, ctx)
 	if err != nil {
-		PrintError()
+		p.PrintError()
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
 	containerName, err := validatePod(pod, target.ContainerName)
 	if err != nil {
-		PrintError()
+		p.PrintError()
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
 	containerId, err := kubernetes.GetContainerId(containerName, pod)
 	if err != nil {
-		PrintError()
+		p.PrintError()
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	PrintSuccess()
+	p.PrintSuccess()
 	target.ContainerName = containerName
 	target.ContainerId = containerId
-	fmt.Print("Launching profiler ... ")
+	p.Print("Launching profiler ... ")
 	profileId, job, err := kubernetes.LaunchFlameJob(pod, target, ctx)
 	if err != nil {
-		PrintError()
+		p.PrintError()
 		fmt.Print(err.Error())
 		os.Exit(1)
+	}
+
+	if target.DryRun {
+		return
 	}
 
 	target.Id = profileId
 	profilerPod, err := kubernetes.WaitForPodStart(target, ctx)
 	if err != nil {
-		PrintError()
+		p.PrintError()
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	PrintSuccess()
+	p.PrintSuccess()
 	apiHandler := &handler.ApiEventsHandler{
 		Job:    job,
 		Target: target,
 	}
 	done, err := kubernetes.GetLogsFromPod(profilerPod, apiHandler, ctx)
 	if err != nil {
-		PrintError()
+		p.PrintError()
 		fmt.Println(err.Error())
 	}
 

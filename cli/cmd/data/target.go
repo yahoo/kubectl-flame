@@ -13,4 +13,5 @@ type TargetDetails struct {
 	Id            string
 	FileName      string
 	Alpine        bool
+	DryRun        bool
 }
