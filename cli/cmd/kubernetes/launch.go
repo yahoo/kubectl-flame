@@ -5,12 +5,15 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/runtime"
+	"os"
 
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/util/uuid"
 )
 
@@ -30,6 +33,10 @@ func LaunchFlameJob(targetPod *v1.Pod, targetDetails *data.TargetDetails, ctx co
 	}
 
 	job := &batchv1.Job{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Job",
+			APIVersion: "batch/v1",
+		},
 		ObjectMeta: commonMeta,
 		Spec: batchv1.JobSpec{
 			Parallelism:             int32Ptr(1),
@@ -93,6 +100,11 @@ func LaunchFlameJob(targetPod *v1.Pod, targetDetails *data.TargetDetails, ctx co
 		},
 	}
 
+	if targetDetails.DryRun {
+		err := printJob(job)
+		return "", nil, err
+	}
+
 	createJob, err := clientSet.
 		BatchV1().
 		Jobs(targetDetails.Namespace).
@@ -103,6 +115,20 @@ func LaunchFlameJob(targetPod *v1.Pod, targetDetails *data.TargetDetails, ctx co
 	}
 
 	return id, createJob, nil
+}
+
+func printJob(job *batchv1.Job) error {
+	scheme := runtime.NewScheme()
+	err := metav1.AddMetaToScheme(scheme)
+	if err != nil {
+		return err
+	}
+
+	encoder := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{
+		Yaml: true,
+	})
+
+	return encoder.Encode(job, os.Stdout)
 }
 
 func DeleteProfilingJob(job *batchv1.Job, targetDetails *data.TargetDetails, ctx context.Context) error {

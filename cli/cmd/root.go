@@ -71,6 +71,7 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	cmd.Flags().DurationVarP(&targetDetails.Duration, "time", "t", defaultDuration, "Enter max scan Duration")
 	cmd.Flags().StringVarP(&targetDetails.FileName, "file", "f", "flamegraph.svg", "Optional file location")
 	cmd.Flags().BoolVar(&targetDetails.Alpine, "alpine", false, "Target image is based on Alpine")
+	cmd.Flags().BoolVar(&targetDetails.DryRun, "dry-run", false, "simulate profiling")
 	options.configFlags.AddFlags(cmd.Flags())
 
 	return cmd
