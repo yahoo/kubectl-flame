@@ -5,7 +5,6 @@ package kubernetes
 import (
 	"context"
 	"fmt"
-	"k8s.io/apimachinery/pkg/runtime"
 	"os"
 
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
@@ -78,23 +77,7 @@ func LaunchFlameJob(targetPod *v1.Pod, targetDetails *data.TargetDetails, ctx co
 						},
 					},
 					RestartPolicy: "Never",
-					Affinity: &apiv1.Affinity{
-						NodeAffinity: &apiv1.NodeAffinity{
-							RequiredDuringSchedulingIgnoredDuringExecution: &apiv1.NodeSelector{
-								NodeSelectorTerms: []apiv1.NodeSelectorTerm{
-									{
-										MatchExpressions: []apiv1.NodeSelectorRequirement{
-											{
-												Key:      "kubernetes.io/hostname",
-												Operator: apiv1.NodeSelectorOpIn,
-												Values:   []string{targetPod.Spec.NodeName},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					NodeName:      targetPod.Spec.NodeName,
 				},
 			},
 		},
@@ -118,13 +101,7 @@ func LaunchFlameJob(targetPod *v1.Pod, targetDetails *data.TargetDetails, ctx co
 }
 
 func printJob(job *batchv1.Job) error {
-	scheme := runtime.NewScheme()
-	err := metav1.AddMetaToScheme(scheme)
-	if err != nil {
-		return err
-	}
-
-	encoder := json.NewSerializerWithOptions(json.DefaultMetaFactory, scheme, scheme, json.SerializerOptions{
+	encoder := json.NewSerializerWithOptions(json.DefaultMetaFactory, nil, nil, json.SerializerOptions{
 		Yaml: true,
 	})
 
