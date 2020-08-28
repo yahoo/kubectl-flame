@@ -17,7 +17,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
-        tags: ${{ steps.vars.outputs.tag }}-jvm
+        tags: test
     - name: Build JVM Alpine Docker Image
       uses: docker/build-push-action@v1
       with:
@@ -25,4 +25,4 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
-        tags: ${{ steps.vars.outputs.tag }}-jvm-alpine
+        tags: test-jvm-alpine
