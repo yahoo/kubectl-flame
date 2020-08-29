@@ -10,7 +10,7 @@ var (
 )
 
 func String() string {
-	return fmt.Sprintf("kubectl flame version: %s\ncommit: %s\nbuild date: %s", semver, commit, date)
+	return fmt.Sprintf("Version: %s, Commit: %s, Build Date: %s", semver, commit, date)
 }
 
 func GetCurrent() string {

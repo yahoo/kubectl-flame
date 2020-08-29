@@ -30,6 +30,7 @@ These commands help you identify application performance issues.
 )
 
 var targetDetails data.TargetDetails
+var showVersion bool
 
 type FlameOptions struct {
 	configFlags *genericclioptions.ConfigFlags
@@ -55,6 +56,11 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 			c.SetOutput(streams.ErrOut)
 		},
 		Run: func(cmd *cobra.Command, args []string) {
+			if showVersion {
+				fmt.Fprintln(streams.Out, version.String())
+				return
+			}
+
 			if len(args) == 0 {
 				cmd.Help()
 				return
@@ -69,23 +75,13 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(newVersionCommand(streams))
-	cmd.Flags().DurationVarP(&targetDetails.Duration, "time", "t", defaultDuration, "Enter max scan Duration")
+	cmd.Flags().BoolVar(&showVersion, "version", false, "Print version info")
+	cmd.Flags().DurationVarP(&targetDetails.Duration, "time", "t", defaultDuration, "Max scan Duration")
 	cmd.Flags().StringVarP(&targetDetails.FileName, "file", "f", "flamegraph.svg", "Optional file location")
 	cmd.Flags().BoolVar(&targetDetails.Alpine, "alpine", false, "Target image is based on Alpine")
-	cmd.Flags().BoolVar(&targetDetails.DryRun, "dry-run", false, "simulate profiling")
+	cmd.Flags().BoolVar(&targetDetails.DryRun, "dry-run", false, "Simulate profiling")
+	cmd.Flags().StringVar(&targetDetails.Image, "image", "", "Manually choose agent docker image")
 	options.configFlags.AddFlags(cmd.Flags())
 
-	return cmd
-}
-func newVersionCommand(streams genericclioptions.IOStreams) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "version",
-		Short: "Print the version information for kubectl flame",
-		RunE: func(c *cobra.Command, args []string) error {
-			fmt.Fprintln(streams.Out, version.String())
-			return nil
-		},
-	}
 	return cmd
 }

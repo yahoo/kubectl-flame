@@ -1,6 +1,8 @@
 name: Release
 on:
-  pull_request:
+  push:
+    tags:
+    - 'v*.*.*'
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -17,7 +19,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
-        tags: test
+        tags: ${{ steps.vars.outputs.tag }}-jvm
     - name: Build JVM Alpine Docker Image
       uses: docker/build-push-action@v1
       with:
@@ -25,4 +27,17 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
-        tags: test-jvm-alpine
+        tags: ${{ steps.vars.outputs.tag }}-jvm-alpine
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14
+    - name: GoReleaser
+      uses: goreleaser/goreleaser-action@v1
+      with:
+        version: latest
+        args: release --rm-dist
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Update new version in krew-index
+      uses: rajatjindal/krew-release-bot@v0.0.38
