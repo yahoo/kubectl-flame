@@ -5,6 +5,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"time"
@@ -68,11 +69,23 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 		},
 	}
 
+	cmd.AddCommand(newVersionCommand(streams))
 	cmd.Flags().DurationVarP(&targetDetails.Duration, "time", "t", defaultDuration, "Enter max scan Duration")
 	cmd.Flags().StringVarP(&targetDetails.FileName, "file", "f", "flamegraph.svg", "Optional file location")
 	cmd.Flags().BoolVar(&targetDetails.Alpine, "alpine", false, "Target image is based on Alpine")
 	cmd.Flags().BoolVar(&targetDetails.DryRun, "dry-run", false, "simulate profiling")
 	options.configFlags.AddFlags(cmd.Flags())
 
+	return cmd
+}
+func newVersionCommand(streams genericclioptions.IOStreams) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "version",
+		Short: "Print the version information for kubectl flame",
+		RunE: func(c *cobra.Command, args []string) error {
+			fmt.Fprintln(streams.Out, version.String())
+			return nil
+		},
+	}
 	return cmd
 }
