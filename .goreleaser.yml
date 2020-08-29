@@ -17,6 +17,10 @@ builds:
       - arm64
       - ppc64le
     goarm: [6, 7]
+    ldflags: |
+      -X github.com/VerizonMedia/kubectl-flame/cli/cmd/version.semver={{ .Tag }}
+      -X github.com/VerizonMedia/kubectl-flame/cli/cmd/version.date={{ .Date }}
+      -X github.com/VerizonMedia/kubectl-flame/cli/cmd/version.commit={{ .Commit }}
 archives:
   - id: kubectl-flame-archive
     name_template: |

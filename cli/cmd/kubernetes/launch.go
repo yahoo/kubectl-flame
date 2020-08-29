@@ -5,6 +5,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 	"os"
 
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
@@ -16,12 +17,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/uuid"
 )
 
+const imageName = "verizondigital/kubectl-flame"
+
 func LaunchFlameJob(targetPod *v1.Pod, targetDetails *data.TargetDetails, ctx context.Context) (string, *batchv1.Job, error) {
 	id := string(uuid.NewUUID())
-	imageName := "edenfed/kubectl-flame:latest"
-	if targetDetails.Alpine {
-		imageName += "-alpine"
-	}
+	imageName := getAgentImage(targetDetails)
 
 	commonMeta := metav1.ObjectMeta{
 		Name:      fmt.Sprintf("kubectl-flame-%s", id),
@@ -106,6 +106,19 @@ func printJob(job *batchv1.Job) error {
 	})
 
 	return encoder.Encode(job, os.Stdout)
+}
+
+func getAgentImage(targetDetails *data.TargetDetails) string {
+	if targetDetails.Image != "" {
+		return targetDetails.Image
+	}
+
+	tag := fmt.Sprintf("%s-jvm", version.GetCurrent())
+	if targetDetails.Alpine {
+		tag = fmt.Sprintf("%s-alpine", tag)
+	}
+
+	return fmt.Sprintf("%s:%s", imageName, tag)
 }
 
 func DeleteProfilingJob(job *batchv1.Job, targetDetails *data.TargetDetails, ctx context.Context) error {
