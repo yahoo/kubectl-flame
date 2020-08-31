@@ -17,7 +17,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
-        tags: ${{ steps.vars.outputs.tag }}-jvm-test
+        tags: jvm-test
     - name: Build JVM Alpine Docker Image
       uses: docker/build-push-action@v1
       with:
@@ -25,7 +25,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
-        tags: ${{ steps.vars.outputs.tag }}-jvm-alpine-test
+        tags: jvm-alpine-test
     - name: Build BPF Docker Image
       uses: docker/build-push-action@v1
       with:
@@ -33,4 +33,4 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
-        tags: ${{ steps.vars.outputs.tag }}-bpf
+        tags: v1.0.2-bpf
