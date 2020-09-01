@@ -4,10 +4,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/VerizonMedia/kubectl-flame/api"
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"os"
 	"time"
 )
 
@@ -29,9 +31,6 @@ These commands help you identify application performance issues.
 `
 )
 
-var targetDetails data.TargetDetails
-var showVersion bool
-
 type FlameOptions struct {
 	configFlags *genericclioptions.ConfigFlags
 	genericclioptions.IOStreams
@@ -45,6 +44,10 @@ func NewFlameOptions(streams genericclioptions.IOStreams) *FlameOptions {
 }
 
 func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
+	var targetDetails data.TargetDetails
+	var showVersion bool
+	var chosenLang string
+
 	options := NewFlameOptions(streams)
 	cmd := &cobra.Command{
 		Use:                   "flame [pod-name]",
@@ -66,6 +69,11 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 				return
 			}
 
+			if err := validateFlags(chosenLang, &targetDetails); err != nil {
+				fmt.Fprintln(streams.Out, err)
+				os.Exit(1)
+			}
+
 			targetDetails.PodName = args[0]
 			if len(args) > 1 {
 				targetDetails.ContainerName = args[1]
@@ -81,7 +89,28 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	cmd.Flags().BoolVar(&targetDetails.Alpine, "alpine", false, "Target image is based on Alpine")
 	cmd.Flags().BoolVar(&targetDetails.DryRun, "dry-run", false, "Simulate profiling")
 	cmd.Flags().StringVar(&targetDetails.Image, "image", "", "Manually choose agent docker image")
+	cmd.Flags().StringVarP(&targetDetails.Pgrep, "pgrep", "p", "", "name of the target process")
+	cmd.Flags().StringVarP(&chosenLang, "lang", "l", "", fmt.Sprintf("Programming language of "+
+		"the target application, choose one of %v", api.AvailableLanguages()))
 	options.configFlags.AddFlags(cmd.Flags())
 
 	return cmd
+}
+
+func validateFlags(langString string, details *data.TargetDetails) error {
+	if langString == "" {
+		return fmt.Errorf("use -l flag to select one of the supported languages %s", api.AvailableLanguages())
+	}
+
+	if !api.IsSupportedLanguage(langString) {
+		return fmt.Errorf("unsupported language, choose one of %s", api.AvailableLanguages())
+	}
+
+	lang := api.ProgrammingLanguage(langString)
+	if lang.IsPgrepRequired() && details.Pgrep == "" {
+		return fmt.Errorf("%s language requires specifing process name via -p flag", langString)
+	}
+
+	details.Language = lang
+	return nil
 }

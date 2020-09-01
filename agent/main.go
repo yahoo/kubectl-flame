@@ -17,45 +17,33 @@ import (
 
 func main() {
 	args, err := validateArgs()
-	if err != nil {
-		api.PublishError(err)
-		os.Exit(1)
-	}
+	handleError(err)
 
 	err = api.PublishEvent(api.Progress, &api.ProgressData{Time: time.Now(), Stage: api.Started})
-	if err != nil {
-		api.PublishError(err)
-		os.Exit(1)
-	}
+	handleError(err)
 
-	err = profiler.SetUp(args)
-	if err != nil {
-		api.PublishError(err)
-		os.Exit(1)
-	}
+	p, err := profiler.ForLanguage(args.Language)
+	handleError(err)
+
+	err = p.SetUp(args)
+	handleError(err)
 
 	done := handleSignals()
-	err = profiler.Invoke(args)
-	if err != nil {
-		api.PublishError(err)
-		os.Exit(1)
-	}
+	err = p.Invoke(args)
+	handleError(err)
 
 	err = api.PublishEvent(api.Progress, &api.ProgressData{Time: time.Now(), Stage: api.Ended})
-	if err != nil {
-		api.PublishError(err)
-		os.Exit(1)
-	}
+	handleError(err)
 
 	<-done
 }
 
 func validateArgs() (*details.ProfilingJob, error) {
-	if len(os.Args) != 6 {
-		return nil, errors.New("expected 6 arguments")
+	if len(os.Args) != 7 && len(os.Args) != 8 {
+		return nil, errors.New("expected 6 or 7 arguments")
 	}
 
-	duration, err := time.ParseDuration((os.Args[5]))
+	duration, err := time.ParseDuration(os.Args[5])
 	if err != nil {
 		return nil, err
 	}
@@ -66,6 +54,10 @@ func validateArgs() (*details.ProfilingJob, error) {
 	currentJob.ContainerName = os.Args[3]
 	currentJob.ContainerID = strings.Replace(os.Args[4], "docker://", "", 1)
 	currentJob.Duration = duration
+	currentJob.Language = api.ProgrammingLanguage(os.Args[6])
+	if len(os.Args) == 8 {
+		currentJob.TargetProcessName = os.Args[7]
+	}
 
 	return currentJob, nil
 }
@@ -83,4 +75,11 @@ func handleSignals() chan bool {
 	}()
 
 	return done
+}
+
+func handleError(err error) {
+	if err != nil {
+		api.PublishError(err)
+		os.Exit(1)
+	}
 }

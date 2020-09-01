@@ -33,7 +33,7 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 		os.Exit(1)
 	}
 
-	containerName, err := validatePod(pod, target.ContainerName)
+	containerName, err := validatePod(pod, target)
 	if err != nil {
 		p.PrintError()
 		fmt.Println(err.Error())
@@ -84,7 +84,7 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 	<-done
 }
 
-func validatePod(pod *v1.Pod, specificContainer string) (string, error) {
+func validatePod(pod *v1.Pod, targetDetails *data.TargetDetails) (string, error) {
 	if pod == nil {
 		return "", errors.New(fmt.Sprintf("Could not find pod %s in Namespace %s",
 			targetDetails.PodName, targetDetails.Namespace))
@@ -93,7 +93,7 @@ func validatePod(pod *v1.Pod, specificContainer string) (string, error) {
 	if len(pod.Spec.Containers) != 1 {
 		var containerNames []string
 		for _, container := range pod.Spec.Containers {
-			if container.Name == specificContainer {
+			if container.Name == targetDetails.ContainerName {
 				return container.Name, nil // Found given container
 			}
 
