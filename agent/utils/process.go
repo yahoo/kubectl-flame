@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"github.com/VerizonMedia/kubectl-flame/agent/details"
 	"github.com/VerizonMedia/kubectl-flame/api"
 	"github.com/fntlnz/mountinfo"
@@ -18,24 +17,21 @@ var (
 	}
 )
 
-func getProcessName(job *details.ProfilingJob) (string, error) {
+func getProcessName(job *details.ProfilingJob) string {
 	if job.TargetProcessName != "" {
-		return job.TargetProcessName, nil
+		return job.TargetProcessName
 	}
 
 	if val, ok := defaultProcessNames[job.Language]; ok {
-		return val, nil
+		return val
 	}
 
-	return "", fmt.Errorf("could not find default process name for language %s", job.Language)
+	return ""
 }
 
 func FindProcessId(job *details.ProfilingJob) (string, error) {
-	name, err := getProcessName(job)
-	if err != nil {
-		return "", err
-	}
-
+	name := getProcessName(job)
+	foundProc := ""
 	proc, err := os.Open("/proc")
 	if err != nil {
 		return "", err
@@ -77,12 +73,27 @@ func FindProcessId(job *details.ProfilingJob) (string, error) {
 						continue
 					}
 
-					if strings.Contains(exeName, name) {
-						return dname, nil
+					if name != "" {
+						// search by process name
+						if strings.Contains(exeName, name) {
+							return dname, nil
+						}
+					} else {
+						if foundProc != "" {
+							return "", errors.New("found more than one process on container," +
+								" specify process name using --pgrep flag")
+						} else {
+							foundProc = dname
+						}
 					}
 				}
 			}
 		}
 	}
+
+	if foundProc != "" {
+		return foundProc, nil
+	}
+
 	return "", errors.New("could not find any process")
 }

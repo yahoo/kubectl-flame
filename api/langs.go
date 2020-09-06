@@ -8,13 +8,8 @@ const (
 )
 
 var (
-	supportedLangs      = []ProgrammingLanguage{Java, Go}
-	requiresProcessName = []ProgrammingLanguage{Go}
+	supportedLangs = []ProgrammingLanguage{Java, Go}
 )
-
-func (l ProgrammingLanguage) IsPgrepRequired() bool {
-	return containsLang(l, requiresProcessName)
-}
 
 func AvailableLanguages() []ProgrammingLanguage {
 	return supportedLangs

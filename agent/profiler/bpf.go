@@ -6,13 +6,14 @@ import (
 	"github.com/VerizonMedia/kubectl-flame/agent/utils"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
 const (
 	kernelSourcesDir         = "/usr/src/kernel-source/"
-	profilerLocation         = "/app/bcc-profiler/profiler"
+	profilerLocation         = "/app/bcc-profiler/profile"
 	rawProfilerOutputFile    = "/tmp/raw_profile.txt"
 	flameGraphScriptLocation = "/app/FlameGraph/flamegraph.pl"
 	flameGraphOutputLocation = "/tmp/flamegraph.svg"
@@ -26,30 +27,24 @@ func (b *BpfProfiler) SetUp(job *details.ProfilingJob) error {
 		return fmt.Errorf("failed to get kernel version, exit code: %d, error: %s", exitCode, err)
 	}
 
-	fmt.Printf("Kernel version: %s\n", kernelVersion)
 	expectedSourcesLocation, err := os.Readlink(fmt.Sprintf("/lib/modules/%s/build",
 		strings.TrimSuffix(kernelVersion, "\n")))
 	if err != nil {
 		return fmt.Errorf("failed to read source link, error: %s", err)
 	}
 
-	_, _, err = utils.ExecuteCommand(exec.Command("mv", kernelSourcesDir, expectedSourcesLocation))
-	if err != nil {
-		return fmt.Errorf("failed moving source files, error: %s", err)
-	}
-
-	return nil
+	return b.moveSources(expectedSourcesLocation)
 }
 
 func (b *BpfProfiler) Invoke(job *details.ProfilingJob) error {
 	err := b.runProfiler(job)
 	if err != nil {
-		return err
+		return fmt.Errorf("profiling failed: %s", err)
 	}
 
 	err = b.generateFlameGraph()
 	if err != nil {
-		return err
+		return fmt.Errorf("flamegraph generation failed: %s", err)
 	}
 
 	return utils.PublishFlameGraph(flameGraphOutputLocation)
@@ -92,4 +87,19 @@ func (b *BpfProfiler) generateFlameGraph() error {
 	flameGraphCmd.Stdout = outputFile
 
 	return flameGraphCmd.Run()
+}
+
+func (b *BpfProfiler) moveSources(target string) error {
+	parent, _ := filepath.Split(target)
+	err := os.MkdirAll(parent, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	_, _, err = utils.ExecuteCommand(exec.Command("mv", kernelSourcesDir, target))
+	if err != nil {
+		return fmt.Errorf("failed moving source files, error: %s, tried to move to: %s", err, target)
+	}
+
+	return nil
 }

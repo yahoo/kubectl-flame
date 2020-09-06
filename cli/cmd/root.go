@@ -106,11 +106,6 @@ func validateFlags(langString string, details *data.TargetDetails) error {
 		return fmt.Errorf("unsupported language, choose one of %s", api.AvailableLanguages())
 	}
 
-	lang := api.ProgrammingLanguage(langString)
-	if lang.IsPgrepRequired() && details.Pgrep == "" {
-		return fmt.Errorf("%s language requires specifing process name via -p flag", langString)
-	}
-
-	details.Language = lang
+	details.Language = api.ProgrammingLanguage(langString)
 	return nil
 }
