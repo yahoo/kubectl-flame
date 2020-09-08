@@ -15,7 +15,7 @@ jobs:
     - name: Build JVM Docker Image
       uses: docker/build-push-action@v1
       with:
-        dockerfile: 'agent/Dockerfile'
+        dockerfile: 'agent/docker/jvm/Dockerfile'
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
@@ -23,11 +23,19 @@ jobs:
     - name: Build JVM Alpine Docker Image
       uses: docker/build-push-action@v1
       with:
-        dockerfile: 'agent/Dockerfile.alpine'
+        dockerfile: 'agent/docker/jvm/Dockerfile.alpine'
         username: ${{ secrets.DOCKER_HUB_USER }}
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
         tags: ${{ steps.vars.outputs.tag }}-jvm-alpine
+    - name: Build BPF Docker Image
+      uses: docker/build-push-action@v1
+      with:
+        dockerfile: 'agent/docker/bpf/Dockerfile'
+        username: ${{ secrets.DOCKER_HUB_USER }}
+        password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        repository: verizondigital/kubectl-flame
+        tags: ${{ steps.vars.outputs.tag }}-bpf
     - name: Setup Go
       uses: actions/setup-go@v1
       with:
