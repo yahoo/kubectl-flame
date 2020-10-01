@@ -28,6 +28,9 @@ func (b *bpfCreator) create(targetPod *v1.Pod, targetDetails *data.TargetDetails
 		Labels: map[string]string{
 			"kubectl-flame/id": id,
 		},
+		Annotations: map[string]string{
+			"sidecar.istio.io/inject": "false",
+		},
 	}
 
 	job := &batchv1.Job{
