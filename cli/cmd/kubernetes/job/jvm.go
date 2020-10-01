@@ -73,6 +73,9 @@ func (c *jvmCreator) create(targetPod *v1.Pod, targetDetails *data.TargetDetails
 									MountPath: "/var/lib/docker",
 								},
 							},
+							SecurityContext: &v1.SecurityContext{
+								Privileged: boolPtr(true),
+							},
 						},
 					},
 					RestartPolicy: "Never",
