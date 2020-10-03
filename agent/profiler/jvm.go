@@ -12,7 +12,7 @@ import (
 
 const (
 	profilerDir = "/tmp/async-profiler"
-	fileName    = profilerDir + "/flamegraph.svg"
+	fileName    = "/tmp/flamegraph.svg"
 	profilerSh  = profilerDir + "/profiler.sh"
 )
 
