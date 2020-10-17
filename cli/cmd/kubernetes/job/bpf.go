@@ -1,19 +1,22 @@
+//: Copyright Verizon Media
+//: Licensed under the terms of the Apache 2.0 License. See LICENSE file in the project root for terms.
 package job
 
 import (
 	"fmt"
-	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
-	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
+
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
+
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 )
 
 type bpfCreator struct{}
 
-func (b *bpfCreator) create(targetPod *v1.Pod, targetDetails *data.TargetDetails) (string, *batchv1.Job) {
+func (b *bpfCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDetails) (string, *batchv1.Job) {
 	id := string(uuid.NewUUID())
 	var imageName string
 	if targetDetails.Image != "" {
@@ -43,9 +46,9 @@ func (b *bpfCreator) create(targetPod *v1.Pod, targetDetails *data.TargetDetails
 			Parallelism:             int32Ptr(1),
 			Completions:             int32Ptr(1),
 			TTLSecondsAfterFinished: int32Ptr(5),
-			Template: v1.PodTemplateSpec{
+			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: commonMeta,
-				Spec: v1.PodSpec{
+				Spec: apiv1.PodSpec{
 					HostPID: true,
 					Volumes: []apiv1.Volume{
 						{
@@ -68,7 +71,7 @@ func (b *bpfCreator) create(targetPod *v1.Pod, targetDetails *data.TargetDetails
 					InitContainers: nil,
 					Containers: []apiv1.Container{
 						{
-							ImagePullPolicy: v1.PullAlways,
+							ImagePullPolicy: apiv1.PullAlways,
 							Name:            "kubectl-flame",
 							Image:           imageName,
 							Command:         []string{"/app/agent"},
@@ -90,7 +93,7 @@ func (b *bpfCreator) create(targetPod *v1.Pod, targetDetails *data.TargetDetails
 									MountPath: "/lib/modules",
 								},
 							},
-							SecurityContext: &v1.SecurityContext{
+							SecurityContext: &apiv1.SecurityContext{
 								Privileged: boolPtr(true),
 							},
 						},

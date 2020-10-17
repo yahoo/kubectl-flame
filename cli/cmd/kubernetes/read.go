@@ -9,18 +9,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 )
 
 type DataHandler interface {
 	Handle(events chan string, done chan bool, ctx context.Context)
 }
 
-func GetPodDetails(podName, namespace string, ctx context.Context) (*v1.Pod, error) {
+func GetPodDetails(podName, namespace string, ctx context.Context) (*apiv1.Pod, error) {
 	podObject, err := clientSet.
 		CoreV1().
 		Pods(namespace).
@@ -32,8 +32,8 @@ func GetPodDetails(podName, namespace string, ctx context.Context) (*v1.Pod, err
 	return podObject, nil
 }
 
-func WaitForPodStart(target *data.TargetDetails, ctx context.Context) (*v1.Pod, error) {
-	var pod *v1.Pod
+func WaitForPodStart(target *data.TargetDetails, ctx context.Context) (*apiv1.Pod, error) {
+	var pod *apiv1.Pod
 	err := wait.Poll(1*time.Second, 5*time.Minute,
 		func() (bool, error) {
 			podList, err := clientSet.
@@ -53,11 +53,11 @@ func WaitForPodStart(target *data.TargetDetails, ctx context.Context) (*v1.Pod, 
 
 			pod = &podList.Items[0]
 			switch pod.Status.Phase {
-			case v1.PodFailed:
+			case apiv1.PodFailed:
 				return false, fmt.Errorf("pod failed")
-			case v1.PodSucceeded:
+			case apiv1.PodSucceeded:
 				fallthrough
-			case v1.PodRunning:
+			case apiv1.PodRunning:
 				return true, nil
 			default:
 				return false, nil
@@ -71,7 +71,7 @@ func WaitForPodStart(target *data.TargetDetails, ctx context.Context) (*v1.Pod, 
 	return pod, nil
 }
 
-func GetLogsFromPod(pod *v1.Pod, handler DataHandler, ctx context.Context) (chan bool, error) {
+func GetLogsFromPod(pod *apiv1.Pod, handler DataHandler, ctx context.Context) (chan bool, error) {
 	done := make(chan bool)
 	req := clientSet.CoreV1().
 		Pods(pod.Namespace).
@@ -103,7 +103,7 @@ func GetLogsFromPod(pod *v1.Pod, handler DataHandler, ctx context.Context) (chan
 	return done, nil
 }
 
-func GetContainerId(containerName string, pod *v1.Pod) (string, error) {
+func GetContainerId(containerName string, pod *apiv1.Pod) (string, error) {
 	for _, containerStatus := range pod.Status.ContainerStatuses {
 		if containerStatus.Name == containerName {
 			return containerStatus.ContainerID, nil
