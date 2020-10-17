@@ -10,7 +10,10 @@ import (
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 )
 
-const baseImageName = "verizondigital/kubectl-flame"
+const (
+	baseImageName = "verizondigital/kubectl-flame"
+	ContainerName = "kubectl-flame"
+)
 
 var (
 	jvm = jvmCreator{}

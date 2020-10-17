@@ -66,7 +66,7 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 					Containers: []apiv1.Container{
 						{
 							ImagePullPolicy: apiv1.PullAlways,
-							Name:            "kubectl-flame",
+							Name:            ContainerName,
 							Image:           imageName,
 							Command:         []string{"/app/agent"},
 							Args:            args,
