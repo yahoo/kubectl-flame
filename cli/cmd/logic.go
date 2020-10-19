@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
+	"log"
 
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/handler"
@@ -19,8 +19,7 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 	ns, err := kubernetes.Connect(configFlags)
 	p := NewPrinter(target.DryRun)
 	if err != nil {
-		fmt.Printf("Failed connecting to kubernetes cluster: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("Failed connecting to kubernetes cluster: %v\n", err)
 	}
 
 	target.Namespace = ns
@@ -29,22 +28,19 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 	pod, err := kubernetes.GetPodDetails(target.PodName, target.Namespace, ctx)
 	if err != nil {
 		p.PrintError()
-		fmt.Println(err.Error())
-		os.Exit(1)
+		log.Fatalf(err.Error())
 	}
 
 	containerName, err := validatePod(pod, target)
 	if err != nil {
 		p.PrintError()
-		fmt.Println(err.Error())
-		os.Exit(1)
+		log.Fatalf(err.Error())
 	}
 
 	containerId, err := kubernetes.GetContainerId(containerName, pod)
 	if err != nil {
 		p.PrintError()
-		fmt.Println(err.Error())
-		os.Exit(1)
+		log.Fatalf(err.Error())
 	}
 
 	p.PrintSuccess()
@@ -54,8 +50,7 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 	profileId, job, err := kubernetes.LaunchFlameJob(pod, target, ctx)
 	if err != nil {
 		p.PrintError()
-		fmt.Print(err.Error())
-		os.Exit(1)
+		log.Fatalf(err.Error())
 	}
 
 	if target.DryRun {
@@ -66,8 +61,7 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 	profilerPod, err := kubernetes.WaitForPodStart(target, ctx)
 	if err != nil {
 		p.PrintError()
-		fmt.Println(err.Error())
-		os.Exit(1)
+		log.Fatalf(err.Error())
 	}
 
 	p.PrintSuccess()
