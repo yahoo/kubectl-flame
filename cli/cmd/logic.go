@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/handler"
