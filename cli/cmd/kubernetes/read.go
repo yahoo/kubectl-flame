@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/kubernetes/job"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -74,10 +75,11 @@ func WaitForPodStart(target *data.TargetDetails, ctx context.Context) (*apiv1.Po
 func GetLogsFromPod(pod *apiv1.Pod, handler DataHandler, ctx context.Context) (chan bool, error) {
 	done := make(chan bool)
 	req := clientSet.CoreV1().
-		Pods(pod.Namespace).
-		GetLogs(pod.Name, &apiv1.PodLogOptions{
-			Follow: true,
-		})
+    		Pods(pod.Namespace).
+    		GetLogs(pod.Name, &apiv1.PodLogOptions{
+    			Follow:    true,
+    			Container: job.ContainerName,
+    		})
 
 	readCloser, err := req.Stream(ctx)
 	if err != nil {
