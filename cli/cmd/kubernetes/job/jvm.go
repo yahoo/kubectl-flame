@@ -57,7 +57,7 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 							Name: "target-filesystem",
 							VolumeSource: apiv1.VolumeSource{
 								HostPath: &apiv1.HostPathVolumeSource{
-									Path: "/var/lib/docker",
+									Path: targetDetails.DockerPath,
 								},
 							},
 						},
