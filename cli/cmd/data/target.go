@@ -18,7 +18,7 @@ type TargetDetails struct {
 	Alpine        bool
 	DryRun        bool
 	Image         string
-  DockerPath    string
+        DockerPath    string
 	Language      api.ProgrammingLanguage
 	Pgrep         string
 }
