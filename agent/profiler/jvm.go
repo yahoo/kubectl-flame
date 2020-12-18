@@ -44,7 +44,8 @@ func (j *JvmProfiler) Invoke(job *details.ProfilingJob) error {
 	}
 
 	duration := strconv.Itoa(int(job.Duration.Seconds()))
-	cmd := exec.Command(profilerSh, "-d", duration, "-f", fileName, "-e", "wall", pid)
+	event := string(job.Event)
+	cmd := exec.Command(profilerSh, "-d", duration, "-f", fileName, "-e", event, pid)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out

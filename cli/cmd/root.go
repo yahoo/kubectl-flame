@@ -15,6 +15,7 @@ import (
 
 const (
 	defaultDuration = 1 * time.Minute
+	defaultEvent    = string(api.Wall)
 	flameLong       = `Profile existing applications with low-overhead by generating flame graphs.
 
 These commands help you identify application performance issues. 
@@ -47,6 +48,7 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	var targetDetails data.TargetDetails
 	var showVersion bool
 	var chosenLang string
+	var chosenEvent string
 
 	options := NewFlameOptions(streams)
 	cmd := &cobra.Command{
@@ -69,7 +71,7 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 				return
 			}
 
-			if err := validateFlags(chosenLang, &targetDetails); err != nil {
+			if err := validateFlags(chosenLang, chosenEvent, &targetDetails); err != nil {
 				fmt.Fprintln(streams.Out, err)
 				os.Exit(1)
 			}
@@ -92,12 +94,14 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	cmd.Flags().StringVarP(&targetDetails.Pgrep, "pgrep", "p", "", "name of the target process")
 	cmd.Flags().StringVarP(&chosenLang, "lang", "l", "", fmt.Sprintf("Programming language of "+
 		"the target application, choose one of %v", api.AvailableLanguages()))
+	cmd.Flags().StringVarP(&chosenEvent, "event", "e", defaultEvent, fmt.Sprintf("Profiling event, choose one of %v",
+		api.AvailableEvents()))
 	options.configFlags.AddFlags(cmd.Flags())
 
 	return cmd
 }
 
-func validateFlags(langString string, details *data.TargetDetails) error {
+func validateFlags(langString string, eventString string, details *data.TargetDetails) error {
 	if langString == "" {
 		return fmt.Errorf("use -l flag to select one of the supported languages %s", api.AvailableLanguages())
 	}
@@ -106,6 +110,11 @@ func validateFlags(langString string, details *data.TargetDetails) error {
 		return fmt.Errorf("unsupported language, choose one of %s", api.AvailableLanguages())
 	}
 
+	if eventString != "" && !api.IsSupportedEvent(eventString) {
+		return fmt.Errorf("unsupported event, choose one of %s", api.AvailableEvents())
+	}
+
 	details.Language = api.ProgrammingLanguage(langString)
+	details.Event = api.ProfilingEvent(eventString)
 	return nil
 }

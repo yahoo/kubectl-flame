@@ -15,4 +15,5 @@ type ProfilingJob struct {
 	PodUID            string
 	Language          api.ProgrammingLanguage
 	TargetProcessName string
+	Event             api.ProfilingEvent
 }
