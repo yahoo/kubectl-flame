@@ -89,6 +89,7 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	cmd.Flags().BoolVar(&targetDetails.Alpine, "alpine", false, "Target image is based on Alpine")
 	cmd.Flags().BoolVar(&targetDetails.DryRun, "dry-run", false, "Simulate profiling")
 	cmd.Flags().StringVar(&targetDetails.Image, "image", "", "Manually choose agent docker image")
+	cmd.Flags().StringVar(&targetDetails.DockerPath, "docker-path", "/var/lib/docker/", "Use a different Docker install path")
 	cmd.Flags().StringVarP(&targetDetails.Pgrep, "pgrep", "p", "", "name of the target process")
 	cmd.Flags().StringVarP(&chosenLang, "lang", "l", "", fmt.Sprintf("Programming language of "+
 		"the target application, choose one of %v", api.AvailableLanguages()))
