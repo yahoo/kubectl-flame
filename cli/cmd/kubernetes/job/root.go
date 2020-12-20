@@ -16,8 +16,9 @@ const (
 )
 
 var (
-	jvm = jvmCreator{}
-	bpf = bpfCreator{}
+	jvm    = jvmCreator{}
+	bpf    = bpfCreator{}
+	python = pythonCreator{}
 )
 
 type creator interface {
@@ -30,6 +31,8 @@ func Create(targetPod *apiv1.Pod, targetDetails *data.TargetDetails) (string, *b
 		return jvm.create(targetPod, targetDetails)
 	case api.Go:
 		return bpf.create(targetPod, targetDetails)
+	case api.Python:
+		return python.create(targetPod, targetDetails)
 	}
 
 	// Should not happen
