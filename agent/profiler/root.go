@@ -12,8 +12,9 @@ type FlameGraphProfiler interface {
 }
 
 var (
-	jvm = JvmProfiler{}
-	bpf = BpfProfiler{}
+	jvm    = JvmProfiler{}
+	bpf    = BpfProfiler{}
+	python = PythonProfiler{}
 )
 
 func ForLanguage(lang api.ProgrammingLanguage) (FlameGraphProfiler, error) {
@@ -22,6 +23,8 @@ func ForLanguage(lang api.ProgrammingLanguage) (FlameGraphProfiler, error) {
 		return &jvm, nil
 	case api.Go:
 		return &bpf, nil
+	case api.Python:
+		return &python, nil
 	default:
 		return nil, fmt.Errorf("could not find profiler for language %s", lang)
 	}

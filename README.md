@@ -15,7 +15,7 @@ Running `kubectlf-flame` does **not** require any modification to existing pods.
 - [License](#license)
 
 ## Requirements
-* Supported languages: Go, Java (any JVM based language)
+* Supported languages: Go, Java (any JVM based language) and Python
 * Kubernetes cluster that use Docker as the container runtime (tested on GKE, EKS and AKS)
 
 ## Usage
@@ -63,6 +63,7 @@ See the release page for the full list of pre-built assets.
 Under the hood `kubectl-flame` use [async-profiler](https://github.com/jvm-profiling-tools/async-profiler) in order to generate flame graphs for Java applications. 
 Interaction with the target JVM is done via a shared `/tmp` folder.
 Golang support is based on [ebpf profiling](https://en.wikipedia.org/wiki/Berkeley_Packet_Filter).
+Python support is based on [py-spy](https://github.com/benfred/py-spy).
 
 ## Contribute
 Please refer to [the contributing.md file](Contributing.md) for information about how to get involved. We welcome issues, questions, and pull requests.

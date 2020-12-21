@@ -36,6 +36,14 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: verizondigital/kubectl-flame
         tags: ${{ steps.vars.outputs.tag }}-bpf
+    - name: Build Python Docker Image
+      uses: docker/build-push-action@v1
+      with:
+        dockerfile: 'agent/docker/python/Dockerfile'
+        username: ${{ secrets.DOCKER_HUB_USER }}
+        password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        repository: verizondigital/kubectl-flame
+        tags: ${{ steps.vars.outputs.tag }}-python
     - name: Setup Go
       uses: actions/setup-go@v1
       with:

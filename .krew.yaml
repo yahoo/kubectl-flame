@@ -9,7 +9,7 @@ spec:
   description: |
     Generate CPU flame graphs without restarting pods and with low overhead.
   caveats: |
-    Currently, only Java is supported.
+    Currently supported languages: Go, Java (any JVM based language) and Python
   platforms:
     - {{addURIAndSha "https://github.com/VerizonMedia/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_darwin_x86_64.tar.gz" .TagName | indent 6 }}
       bin: kubectl-flame
