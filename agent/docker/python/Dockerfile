@@ -5,7 +5,7 @@ RUN go get -d -v ./...
 RUN cd agent && go build -o /go/bin/agent
 
 FROM alpine AS pyspybuild
-RUN apk add python3
+RUN apk add python3 py3-pip
 RUN echo 'manylinux1_compatible = True' > /usr/lib/python3.8/site-packages/_manylinux.py
 RUN pip3 install py-spy==0.4.0.dev1
 
