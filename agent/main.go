@@ -39,8 +39,8 @@ func main() {
 }
 
 func validateArgs() (*details.ProfilingJob, error) {
-	if len(os.Args) != 7 && len(os.Args) != 8 {
-		return nil, errors.New("expected 6 or 7 arguments")
+	if len(os.Args) != 8 && len(os.Args) != 9 {
+		return nil, errors.New("expected 7 or 8 arguments")
 	}
 
 	duration, err := time.ParseDuration(os.Args[5])
@@ -55,8 +55,9 @@ func validateArgs() (*details.ProfilingJob, error) {
 	currentJob.ContainerID = strings.Replace(os.Args[4], "docker://", "", 1)
 	currentJob.Duration = duration
 	currentJob.Language = api.ProgrammingLanguage(os.Args[6])
-	if len(os.Args) == 8 {
-		currentJob.TargetProcessName = os.Args[7]
+	currentJob.Event = api.ProfilingEvent(os.Args[7])
+	if len(os.Args) == 9 {
+		currentJob.TargetProcessName = os.Args[8]
 	}
 
 	return currentJob, nil

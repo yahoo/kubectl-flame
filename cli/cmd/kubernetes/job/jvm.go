@@ -21,7 +21,8 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 	imageName := c.getAgentImage(targetDetails)
 	args := []string{id, string(targetPod.UID),
 		targetDetails.ContainerName, targetDetails.ContainerId,
-		targetDetails.Duration.String(), string(targetDetails.Language)}
+		targetDetails.Duration.String(), string(targetDetails.Language),
+		string(targetDetails.Event)}
 
 	if targetDetails.Pgrep != "" {
 		args = append(args, targetDetails.Pgrep)

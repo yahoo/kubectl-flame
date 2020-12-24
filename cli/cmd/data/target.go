@@ -12,6 +12,7 @@ type TargetDetails struct {
 	PodName       string
 	ContainerName string
 	ContainerId   string
+	Event	      api.ProfilingEvent
 	Duration      time.Duration
 	Id            string
 	FileName      string
