@@ -2,6 +2,7 @@ package job
 
 import (
 	"fmt"
+
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 	batchv1 "k8s.io/api/batch/v1"
@@ -12,24 +13,29 @@ import (
 
 type pythonCreator struct{}
 
-func (p *pythonCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDetails) (string, *batchv1.Job) {
+func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error) {
 	id := string(uuid.NewUUID())
 	var imageName string
-	if targetDetails.Image != "" {
-		imageName = targetDetails.Image
+	if cfg.TargetConfig.Image != "" {
+		imageName = cfg.TargetConfig.Image
 	} else {
 		imageName = fmt.Sprintf("%s:%s-python", baseImageName, version.GetCurrent())
 	}
 
 	commonMeta := metav1.ObjectMeta{
 		Name:      fmt.Sprintf("kubectl-flame-%s", id),
-		Namespace: targetDetails.Namespace,
+		Namespace: cfg.TargetConfig.Namespace,
 		Labels: map[string]string{
 			"kubectl-flame/id": id,
 		},
 		Annotations: map[string]string{
 			"sidecar.istio.io/inject": "false",
 		},
+	}
+
+	resources, err := cfg.JobConfig.ToResourceRequirements()
+	if err != nil {
+		return "", nil, fmt.Errorf("unable to generate resource requirements: %w", err)
 	}
 
 	job := &batchv1.Job{
@@ -53,13 +59,14 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetD
 							Name:            ContainerName,
 							Image:           imageName,
 							Command:         []string{"/app/agent"},
-							Args: []string{id,
+							Args: []string{
+								id,
 								string(targetPod.UID),
-								targetDetails.ContainerName,
-								targetDetails.ContainerId,
-								targetDetails.Duration.String(),
-								string(targetDetails.Language),
-								targetDetails.Pgrep,
+								cfg.TargetConfig.ContainerName,
+								cfg.TargetConfig.ContainerId,
+								cfg.TargetConfig.Duration.String(),
+								string(cfg.TargetConfig.Language),
+								cfg.TargetConfig.Pgrep,
 							},
 							SecurityContext: &apiv1.SecurityContext{
 								Privileged: boolPtr(true),
@@ -67,6 +74,7 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetD
 									Add: []apiv1.Capability{"SYS_PTRACE"},
 								},
 							},
+							Resources: resources,
 						},
 					},
 					RestartPolicy: "Never",
@@ -76,5 +84,5 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetD
 		},
 	}
 
-	return id, job
+	return id, job, nil
 }

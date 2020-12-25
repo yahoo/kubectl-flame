@@ -3,8 +3,9 @@
 package data
 
 import (
-	"github.com/VerizonMedia/kubectl-flame/api"
 	"time"
+
+	"github.com/VerizonMedia/kubectl-flame/api"
 )
 
 type TargetDetails struct {
@@ -12,7 +13,7 @@ type TargetDetails struct {
 	PodName       string
 	ContainerName string
 	ContainerId   string
-	Event	      api.ProfilingEvent
+	Event         api.ProfilingEvent
 	Duration      time.Duration
 	Id            string
 	FileName      string
