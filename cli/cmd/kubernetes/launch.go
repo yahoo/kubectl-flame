@@ -4,8 +4,10 @@ package kubernetes
 
 import (
 	"context"
-	"github.com/VerizonMedia/kubectl-flame/cli/cmd/kubernetes/job"
+	"fmt"
 	"os"
+
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/kubernetes/job"
 
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
 	batchv1 "k8s.io/api/batch/v1"
@@ -14,19 +16,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
-func LaunchFlameJob(targetPod *v1.Pod, targetDetails *data.TargetDetails, ctx context.Context) (string, *batchv1.Job, error) {
-	id, flameJob := job.Create(targetPod, targetDetails)
+func LaunchFlameJob(targetPod *v1.Pod, cfg *data.FlameConfig, ctx context.Context) (string, *batchv1.Job, error) {
+	id, flameJob, err := job.Create(targetPod, cfg)
+	if err != nil {
+		return "", nil, fmt.Errorf("unable to create job: %w", err)
+	}
 
-	if targetDetails.DryRun {
+	if cfg.TargetConfig.DryRun {
 		err := printJob(flameJob)
 		return "", nil, err
 	}
 
 	createJob, err := clientSet.
 		BatchV1().
-		Jobs(targetDetails.Namespace).
+		Jobs(cfg.TargetConfig.Namespace).
 		Create(ctx, flameJob, metav1.CreateOptions{})
-
 	if err != nil {
 		return "", nil, err
 	}

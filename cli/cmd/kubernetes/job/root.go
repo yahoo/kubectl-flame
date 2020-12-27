@@ -3,6 +3,8 @@
 package job
 
 import (
+	"errors"
+
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 
@@ -22,19 +24,19 @@ var (
 )
 
 type creator interface {
-	create(targetPod *apiv1.Pod, targetDetails *data.TargetDetails) (string, *batchv1.Job)
+	create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error)
 }
 
-func Create(targetPod *apiv1.Pod, targetDetails *data.TargetDetails) (string, *batchv1.Job) {
-	switch targetDetails.Language {
+func Create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error) {
+	switch cfg.TargetConfig.Language {
 	case api.Java:
-		return jvm.create(targetPod, targetDetails)
+		return jvm.create(targetPod, cfg)
 	case api.Go:
-		return bpf.create(targetPod, targetDetails)
+		return bpf.create(targetPod, cfg)
 	case api.Python:
-		return python.create(targetPod, targetDetails)
+		return python.create(targetPod, cfg)
 	}
 
 	// Should not happen
-	panic("got language without job creator")
+	return "", nil, errors.New("got language without job creator")
 }

@@ -16,24 +16,29 @@ import (
 
 type bpfCreator struct{}
 
-func (b *bpfCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDetails) (string, *batchv1.Job) {
+func (b *bpfCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error) {
 	id := string(uuid.NewUUID())
 	var imageName string
-	if targetDetails.Image != "" {
-		imageName = targetDetails.Image
+	if cfg.TargetConfig.Image != "" {
+		imageName = cfg.TargetConfig.Image
 	} else {
 		imageName = fmt.Sprintf("%s:%s-bpf", baseImageName, version.GetCurrent())
 	}
 
 	commonMeta := metav1.ObjectMeta{
 		Name:      fmt.Sprintf("kubectl-flame-%s", id),
-		Namespace: targetDetails.Namespace,
+		Namespace: cfg.TargetConfig.Namespace,
 		Labels: map[string]string{
 			"kubectl-flame/id": id,
 		},
 		Annotations: map[string]string{
 			"sidecar.istio.io/inject": "false",
 		},
+	}
+
+	resources, err := cfg.JobConfig.ToResourceRequirements()
+	if err != nil {
+		return "", nil, fmt.Errorf("unable to generate resource requirements: %w", err)
 	}
 
 	job := &batchv1.Job{
@@ -75,13 +80,14 @@ func (b *bpfCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 							Name:            ContainerName,
 							Image:           imageName,
 							Command:         []string{"/app/agent"},
-							Args: []string{id,
+							Args: []string{
+								id,
 								string(targetPod.UID),
-								targetDetails.ContainerName,
-								targetDetails.ContainerId,
-								targetDetails.Duration.String(),
-								string(targetDetails.Language),
-								targetDetails.Pgrep,
+								cfg.TargetConfig.ContainerName,
+								cfg.TargetConfig.ContainerId,
+								cfg.TargetConfig.Duration.String(),
+								string(cfg.TargetConfig.Language),
+								cfg.TargetConfig.Pgrep,
 							},
 							VolumeMounts: []apiv1.VolumeMount{
 								{
@@ -96,6 +102,7 @@ func (b *bpfCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 							SecurityContext: &apiv1.SecurityContext{
 								Privileged: boolPtr(true),
 							},
+							Resources: resources,
 						},
 					},
 					RestartPolicy: "Never",
@@ -105,5 +112,5 @@ func (b *bpfCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 		},
 	}
 
-	return id, job
+	return id, job, nil
 }

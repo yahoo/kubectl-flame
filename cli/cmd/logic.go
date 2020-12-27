@@ -12,26 +12,27 @@ import (
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/handler"
 	"github.com/VerizonMedia/kubectl-flame/cli/cmd/kubernetes"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
-func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlags) {
-	ns, err := kubernetes.Connect(configFlags)
-	p := NewPrinter(target.DryRun)
+func Flame(cfg *data.FlameConfig) {
+	ns, err := kubernetes.Connect(cfg.ConfigFlags)
 	if err != nil {
 		log.Fatalf("Failed connecting to kubernetes cluster: %v\n", err)
 	}
 
-	target.Namespace = ns
+	p := NewPrinter(cfg.TargetConfig.DryRun)
+
+	cfg.TargetConfig.Namespace = ns
 	ctx := context.Background()
+
 	p.Print("Verifying target pod ... ")
-	pod, err := kubernetes.GetPodDetails(target.PodName, target.Namespace, ctx)
+	pod, err := kubernetes.GetPodDetails(cfg.TargetConfig.PodName, cfg.TargetConfig.Namespace, ctx)
 	if err != nil {
 		p.PrintError()
 		log.Fatalf(err.Error())
 	}
 
-	containerName, err := validatePod(pod, target)
+	containerName, err := validatePod(pod, cfg.TargetConfig)
 	if err != nil {
 		p.PrintError()
 		log.Fatalf(err.Error())
@@ -44,21 +45,23 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 	}
 
 	p.PrintSuccess()
-	target.ContainerName = containerName
-	target.ContainerId = containerId
+
+	cfg.TargetConfig.ContainerName = containerName
+	cfg.TargetConfig.ContainerId = containerId
+
 	p.Print("Launching profiler ... ")
-	profileId, job, err := kubernetes.LaunchFlameJob(pod, target, ctx)
+	profileId, job, err := kubernetes.LaunchFlameJob(pod, cfg, ctx)
 	if err != nil {
 		p.PrintError()
 		log.Fatalf(err.Error())
 	}
 
-	if target.DryRun {
+	if cfg.TargetConfig.DryRun {
 		return
 	}
 
-	target.Id = profileId
-	profilerPod, err := kubernetes.WaitForPodStart(target, ctx)
+	cfg.TargetConfig.Id = profileId
+	profilerPod, err := kubernetes.WaitForPodStart(cfg.TargetConfig, ctx)
 	if err != nil {
 		p.PrintError()
 		log.Fatalf(err.Error())
@@ -67,7 +70,7 @@ func Flame(target *data.TargetDetails, configFlags *genericclioptions.ConfigFlag
 	p.PrintSuccess()
 	apiHandler := &handler.ApiEventsHandler{
 		Job:    job,
-		Target: target,
+		Target: cfg.TargetConfig,
 	}
 	done, err := kubernetes.GetLogsFromPod(profilerPod, apiHandler, ctx)
 	if err != nil {

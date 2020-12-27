@@ -16,27 +16,34 @@ import (
 
 type jvmCreator struct{}
 
-func (c *jvmCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDetails) (string, *batchv1.Job) {
+func (c *jvmCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error) {
 	id := string(uuid.NewUUID())
-	imageName := c.getAgentImage(targetDetails)
-	args := []string{id, string(targetPod.UID),
-		targetDetails.ContainerName, targetDetails.ContainerId,
-		targetDetails.Duration.String(), string(targetDetails.Language),
-		string(targetDetails.Event)}
+	imageName := c.getAgentImage(cfg.TargetConfig)
+	args := []string{
+		id, string(targetPod.UID),
+		cfg.TargetConfig.ContainerName, cfg.TargetConfig.ContainerId,
+		cfg.TargetConfig.Duration.String(), string(cfg.TargetConfig.Language),
+		string(cfg.TargetConfig.Event),
+	}
 
-	if targetDetails.Pgrep != "" {
-		args = append(args, targetDetails.Pgrep)
+	if cfg.TargetConfig.Pgrep != "" {
+		args = append(args, cfg.TargetConfig.Pgrep)
 	}
 
 	commonMeta := metav1.ObjectMeta{
 		Name:      fmt.Sprintf("kubectl-flame-%s", id),
-		Namespace: targetDetails.Namespace,
+		Namespace: cfg.TargetConfig.Namespace,
 		Labels: map[string]string{
 			"kubectl-flame/id": id,
 		},
 		Annotations: map[string]string{
 			"sidecar.istio.io/inject": "false",
 		},
+	}
+
+	resources, err := cfg.JobConfig.ToResourceRequirements()
+	if err != nil {
+		return "", nil, fmt.Errorf("unable to generate resource requirements: %w", err)
 	}
 
 	job := &batchv1.Job{
@@ -58,7 +65,7 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 							Name: "target-filesystem",
 							VolumeSource: apiv1.VolumeSource{
 								HostPath: &apiv1.HostPathVolumeSource{
-									Path: targetDetails.DockerPath,
+									Path: cfg.TargetConfig.DockerPath,
 								},
 							},
 						},
@@ -80,6 +87,7 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 							SecurityContext: &apiv1.SecurityContext{
 								Privileged: boolPtr(true),
 							},
+							Resources: resources,
 						},
 					},
 					RestartPolicy: "Never",
@@ -89,7 +97,7 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, targetDetails *data.TargetDeta
 		},
 	}
 
-	return id, job
+	return id, job, nil
 }
 
 func (c *jvmCreator) getAgentImage(targetDetails *data.TargetDetails) string {
