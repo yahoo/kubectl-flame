@@ -25,6 +25,17 @@ func (b *bpfCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string
 		imageName = fmt.Sprintf("%s:%s-bpf", baseImageName, version.GetCurrent())
 	}
 
+	args := []string{
+		id, string(targetPod.UID),
+		cfg.TargetConfig.ContainerName, cfg.TargetConfig.ContainerId,
+		cfg.TargetConfig.Duration.String(), string(cfg.TargetConfig.Language),
+		string(cfg.TargetConfig.Event),
+	}
+
+	if cfg.TargetConfig.Pgrep != "" {
+		args = append(args, cfg.TargetConfig.Pgrep)
+	}
+
 	commonMeta := metav1.ObjectMeta{
 		Name:      fmt.Sprintf("kubectl-flame-%s", id),
 		Namespace: cfg.TargetConfig.Namespace,
@@ -80,15 +91,7 @@ func (b *bpfCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string
 							Name:            ContainerName,
 							Image:           imageName,
 							Command:         []string{"/app/agent"},
-							Args: []string{
-								id,
-								string(targetPod.UID),
-								cfg.TargetConfig.ContainerName,
-								cfg.TargetConfig.ContainerId,
-								cfg.TargetConfig.Duration.String(),
-								string(cfg.TargetConfig.Language),
-								cfg.TargetConfig.Pgrep,
-							},
+							Args:            args,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "sys",
