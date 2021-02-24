@@ -3,12 +3,13 @@ package job
 import (
 	"fmt"
 
-	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
-	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
+
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 )
 
 type pythonCreator struct{}
@@ -16,6 +17,16 @@ type pythonCreator struct{}
 func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error) {
 	id := string(uuid.NewUUID())
 	var imageName string
+	args := []string{
+		id,
+		string(targetPod.UID),
+		cfg.TargetConfig.ContainerName,
+		cfg.TargetConfig.ContainerId,
+		cfg.TargetConfig.Duration.String(),
+		string(cfg.TargetConfig.Language),
+		cfg.TargetConfig.Pgrep,
+	}
+
 	if cfg.TargetConfig.Image != "" {
 		imageName = cfg.TargetConfig.Image
 	} else {
@@ -51,7 +62,17 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (str
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: commonMeta,
 				Spec: apiv1.PodSpec{
-					HostPID:        true,
+					HostPID: true,
+					Volumes: []apiv1.Volume{
+						{
+							Name: "target-filesystem",
+							VolumeSource: apiv1.VolumeSource{
+								HostPath: &apiv1.HostPathVolumeSource{
+									Path: cfg.TargetConfig.DockerPath,
+								},
+							},
+						},
+					},
 					InitContainers: nil,
 					Containers: []apiv1.Container{
 						{
@@ -59,14 +80,12 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (str
 							Name:            ContainerName,
 							Image:           imageName,
 							Command:         []string{"/app/agent"},
-							Args: []string{
-								id,
-								string(targetPod.UID),
-								cfg.TargetConfig.ContainerName,
-								cfg.TargetConfig.ContainerId,
-								cfg.TargetConfig.Duration.String(),
-								string(cfg.TargetConfig.Language),
-								cfg.TargetConfig.Pgrep,
+							Args:            args,
+							VolumeMounts: []apiv1.VolumeMount{
+								{
+									Name:      "target-filesystem",
+									MountPath: "/var/lib/docker",
+								},
 							},
 							SecurityContext: &apiv1.SecurityContext{
 								Privileged: boolPtr(true),
