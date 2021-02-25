@@ -5,13 +5,17 @@ RUN go get -d -v ./...
 RUN cd agent && go build -o /go/bin/agent
 
 FROM openjdk:8-alpine as asyncprofiler
-RUN apk add build-base git linux-headers
-RUN git clone https://github.com/edeNFed/async-profiler.git
-RUN cd async-profiler && make
+RUN mkdir -p /usr/share/async-profiler/ && \
+    wget -O /usr/share/async-profiler/async-profiler.tar.gz https://github.com/jvm-profiling-tools/async-profiler/releases/download/v1.8.4/async-profiler-1.8.4-linux-musl-x64.tar.gz && \
+    cd /usr/share/async-profiler/ && \
+    tar -xvzf async-profiler.tar.gz && \
+    sed -i 's/^SCRIPT_DIR=.*/SCRIPT_DIR=\"\/tmp\/async-profiler\"/g' /usr/share/async-profiler/async-profiler-1.8.4-linux-musl-x64/profiler.sh
 
-FROM alpine
+FROM openjdk:8-alpine
 RUN mkdir -p /app/async-profiler/build
 COPY --from=agentbuild /go/bin/agent /app
-COPY --from=asyncprofiler /async-profiler/build /app/async-profiler/build
-COPY --from=asyncprofiler /async-profiler/profiler.sh /app/async-profiler
+# COPY --from=asyncprofiler /async-profiler/build /app/async-profiler/build
+# COPY --from=asyncprofiler /async-profiler/profiler.sh /app/async-profiler
+COPY --from=asyncprofiler /usr/share/async-profiler/async-profiler-1.8.4-linux-musl-x64/build /app/async-profiler/build
+COPY --from=asyncprofiler /usr/share/async-profiler/async-profiler-1.8.4-linux-musl-x64/profiler.sh /app/async-profiler
 CMD [ "/app/agent" ]
