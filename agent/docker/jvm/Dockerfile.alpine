@@ -12,10 +12,9 @@ RUN mkdir -p /usr/share/async-profiler/ && \
     sed -i 's/^SCRIPT_DIR=.*/SCRIPT_DIR=\"\/tmp\/async-profiler\"/g' /usr/share/async-profiler/async-profiler-1.8.4-linux-musl-x64/profiler.sh
 
 FROM openjdk:8-alpine
-RUN mkdir -p /app/async-profiler/build
+RUN mkdir -p /app/async-profiler/build && \
+    apk add --no-cache libstdc++
 COPY --from=agentbuild /go/bin/agent /app
-# COPY --from=asyncprofiler /async-profiler/build /app/async-profiler/build
-# COPY --from=asyncprofiler /async-profiler/profiler.sh /app/async-profiler
 COPY --from=asyncprofiler /usr/share/async-profiler/async-profiler-1.8.4-linux-musl-x64/build /app/async-profiler/build
 COPY --from=asyncprofiler /usr/share/async-profiler/async-profiler-1.8.4-linux-musl-x64/profiler.sh /app/async-profiler
 CMD [ "/app/agent" ]
