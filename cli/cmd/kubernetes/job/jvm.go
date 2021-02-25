@@ -56,6 +56,7 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string
 			Parallelism:             int32Ptr(1),
 			Completions:             int32Ptr(1),
 			TTLSecondsAfterFinished: int32Ptr(5),
+			BackoffLimit:            int32Ptr(2),
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: commonMeta,
 				Spec: apiv1.PodSpec{
