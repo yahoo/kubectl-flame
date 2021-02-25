@@ -24,7 +24,11 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (str
 		cfg.TargetConfig.ContainerId,
 		cfg.TargetConfig.Duration.String(),
 		string(cfg.TargetConfig.Language),
-		cfg.TargetConfig.Pgrep,
+		string(cfg.TargetConfig.Event),
+	}
+
+	if cfg.TargetConfig.Pgrep != "" {
+		args = append(args, cfg.TargetConfig.Pgrep)
 	}
 
 	if cfg.TargetConfig.Image != "" {
