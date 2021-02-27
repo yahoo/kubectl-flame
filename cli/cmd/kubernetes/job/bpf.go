@@ -19,10 +19,15 @@ type bpfCreator struct{}
 func (b *bpfCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error) {
 	id := string(uuid.NewUUID())
 	var imageName string
+	var imagePullSecret []apiv1.LocalObjectReference
 	if cfg.TargetConfig.Image != "" {
 		imageName = cfg.TargetConfig.Image
 	} else {
 		imageName = fmt.Sprintf("%s:%s-bpf", baseImageName, version.GetCurrent())
+	}
+
+	if cfg.TargetConfig.ImagePullSecret != "" {
+		imagePullSecret = []apiv1.LocalObjectReference{{Name: cfg.TargetConfig.ImagePullSecret}}
 	}
 
 	args := []string{
@@ -85,7 +90,8 @@ func (b *bpfCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string
 							},
 						},
 					},
-					InitContainers: nil,
+					ImagePullSecrets: imagePullSecret,
+					InitContainers:   nil,
 					Containers: []apiv1.Container{
 						{
 							ImagePullPolicy: apiv1.PullAlways,
