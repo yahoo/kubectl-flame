@@ -21,6 +21,7 @@ var (
 	jvm    = jvmCreator{}
 	bpf    = bpfCreator{}
 	python = pythonCreator{}
+	ruby   = rubyCreator{}
 )
 
 type creator interface {
@@ -35,6 +36,8 @@ func Create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, 
 		return bpf.create(targetPod, cfg)
 	case api.Python:
 		return python.create(targetPod, cfg)
+	case api.Ruby:
+		return ruby.create(targetPod, cfg)
 	}
 
 	// Should not happen
