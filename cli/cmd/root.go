@@ -117,6 +117,7 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	cmd.Flags().StringVar(&jobDetails.RequestConfig.Memory, "mem.requests", "", "Memory requests of the started profiling container")
 	cmd.Flags().StringVar(&jobDetails.LimitConfig.CPU, "cpu.limits", "", "CPU limits of the started profiling container")
 	cmd.Flags().StringVar(&jobDetails.LimitConfig.Memory, "mem.limits", "", "Memory limits of the started profiling container")
+	cmd.Flags().StringVar(&targetDetails.ImagePullSecret, "imagePullSecret", "", "imagePullSecret for agent docker image")
 
 	options.configFlags.AddFlags(cmd.Flags())
 

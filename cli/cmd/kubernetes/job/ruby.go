@@ -3,18 +3,17 @@ package job
 import (
 	"fmt"
 
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
+	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
-
-	"github.com/VerizonMedia/kubectl-flame/cli/cmd/data"
-	"github.com/VerizonMedia/kubectl-flame/cli/cmd/version"
 )
 
-type pythonCreator struct{}
+type rubyCreator struct{}
 
-func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error) {
+func (r *rubyCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string, *batchv1.Job, error) {
 	id := string(uuid.NewUUID())
 	var imageName string
 	var imagePullSecret []apiv1.LocalObjectReference
@@ -25,17 +24,13 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (str
 		cfg.TargetConfig.ContainerId,
 		cfg.TargetConfig.Duration.String(),
 		string(cfg.TargetConfig.Language),
-		string(cfg.TargetConfig.Event),
-	}
-
-	if cfg.TargetConfig.Pgrep != "" {
-		args = append(args, cfg.TargetConfig.Pgrep)
+		cfg.TargetConfig.Pgrep,
 	}
 
 	if cfg.TargetConfig.Image != "" {
 		imageName = cfg.TargetConfig.Image
 	} else {
-		imageName = fmt.Sprintf("%s:%s-python", baseImageName, version.GetCurrent())
+		imageName = fmt.Sprintf("%s:%s-ruby", baseImageName, version.GetCurrent())
 	}
 
 	if cfg.TargetConfig.ImagePullSecret != "" {
@@ -68,7 +63,6 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (str
 			Parallelism:             int32Ptr(1),
 			Completions:             int32Ptr(1),
 			TTLSecondsAfterFinished: int32Ptr(5),
-			BackoffLimit:            int32Ptr(2),
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: commonMeta,
 				Spec: apiv1.PodSpec{

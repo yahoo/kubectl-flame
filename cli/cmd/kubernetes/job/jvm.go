@@ -30,6 +30,11 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string
 		args = append(args, cfg.TargetConfig.Pgrep)
 	}
 
+	imagePullSecret := []apiv1.LocalObjectReference{}
+	if cfg.TargetConfig.ImagePullSecret != "" {
+		imagePullSecret = []apiv1.LocalObjectReference{{Name: cfg.TargetConfig.ImagePullSecret}}
+	}
+
 	commonMeta := metav1.ObjectMeta{
 		Name:      fmt.Sprintf("kubectl-flame-%s", id),
 		Namespace: cfg.TargetConfig.Namespace,
@@ -40,7 +45,6 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string
 			"sidecar.istio.io/inject": "false",
 		},
 	}
-
 	resources, err := cfg.JobConfig.ToResourceRequirements()
 	if err != nil {
 		return "", nil, fmt.Errorf("unable to generate resource requirements: %w", err)
@@ -71,7 +75,8 @@ func (c *jvmCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string
 							},
 						},
 					},
-					InitContainers: nil,
+					ImagePullSecrets: imagePullSecret,
+					InitContainers:   nil,
 					Containers: []apiv1.Container{
 						{
 							ImagePullPolicy: apiv1.PullAlways,

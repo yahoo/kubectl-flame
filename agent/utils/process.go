@@ -16,6 +16,7 @@ var (
 	defaultProcessNames = map[api.ProgrammingLanguage]string{
 		api.Java:   "java",
 		api.Python: "python",
+		api.Ruby:   "ruby",
 	}
 )
 
