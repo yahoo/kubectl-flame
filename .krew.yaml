@@ -33,6 +33,17 @@ spec:
         matchLabels:
           os: linux
           arch: amd64
+    - {{addURIAndSha "https://github.com/VerizonMedia/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_linux_arm64.tar.gz" .TagName | indent 6 }}
+      bin: kubectl-flame
+      files:
+        - from: kubectl-flame
+          to: .
+        - from: LICENSE
+          to: .
+      selector:
+        matchLabels:
+          os: linux
+          arch: arm64
     - {{addURIAndSha "https://github.com/VerizonMedia/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_windows_x86_64.zip" .TagName | indent 6 }}
       bin: kubectl-flame.exe
       files:
