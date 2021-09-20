@@ -22,7 +22,11 @@ func Flame(cfg *data.FlameConfig) {
 
 	p := NewPrinter(cfg.TargetConfig.DryRun)
 
-	cfg.TargetConfig.Namespace = ns
+	if cfg.TargetConfig.Namespace == "" {
+		cfg.TargetConfig.Namespace = ns
+	}
+	cfg.JobConfig.Namespace = ns
+
 	ctx := context.Background()
 
 	p.Print("Verifying target pod ... ")
@@ -61,7 +65,7 @@ func Flame(cfg *data.FlameConfig) {
 	}
 
 	cfg.TargetConfig.Id = profileId
-	profilerPod, err := kubernetes.WaitForPodStart(cfg.TargetConfig, ctx)
+	profilerPod, err := kubernetes.WaitForPodStart(cfg, ctx)
 	if err != nil {
 		p.PrintError()
 		log.Fatalf(err.Error())

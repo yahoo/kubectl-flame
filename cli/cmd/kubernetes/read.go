@@ -33,15 +33,15 @@ func GetPodDetails(podName, namespace string, ctx context.Context) (*apiv1.Pod, 
 	return podObject, nil
 }
 
-func WaitForPodStart(target *data.TargetDetails, ctx context.Context) (*apiv1.Pod, error) {
+func WaitForPodStart(cfg *data.FlameConfig, ctx context.Context) (*apiv1.Pod, error) {
 	var pod *apiv1.Pod
 	err := wait.Poll(1*time.Second, 5*time.Minute,
 		func() (bool, error) {
 			podList, err := clientSet.
 				CoreV1().
-				Pods(target.Namespace).
+				Pods(cfg.JobConfig.Namespace).
 				List(ctx, metav1.ListOptions{
-					LabelSelector: fmt.Sprintf("kubectl-flame/id=%s", target.Id),
+					LabelSelector: fmt.Sprintf("kubectl-flame/id=%s", cfg.TargetConfig.Id),
 				})
 
 			if err != nil {
@@ -75,11 +75,11 @@ func WaitForPodStart(target *data.TargetDetails, ctx context.Context) (*apiv1.Po
 func GetLogsFromPod(pod *apiv1.Pod, handler DataHandler, ctx context.Context) (chan bool, error) {
 	done := make(chan bool)
 	req := clientSet.CoreV1().
-    		Pods(pod.Namespace).
-    		GetLogs(pod.Name, &apiv1.PodLogOptions{
-    			Follow:    true,
-    			Container: job.ContainerName,
-    		})
+		Pods(pod.Namespace).
+		GetLogs(pod.Name, &apiv1.PodLogOptions{
+			Follow:    true,
+			Container: job.ContainerName,
+		})
 
 	readCloser, err := req.Stream(ctx)
 	if err != nil {

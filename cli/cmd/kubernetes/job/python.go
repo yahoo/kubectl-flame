@@ -44,7 +44,7 @@ func (p *pythonCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (str
 
 	commonMeta := metav1.ObjectMeta{
 		Name:      fmt.Sprintf("kubectl-flame-%s", id),
-		Namespace: cfg.TargetConfig.Namespace,
+		Namespace: cfg.JobConfig.Namespace,
 		Labels: map[string]string{
 			"kubectl-flame/id": id,
 		},

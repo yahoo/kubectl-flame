@@ -15,6 +15,9 @@ type JobDetails struct {
 
 	// LimitConfig configures resource limits for the job that is started.
 	LimitConfig ResourceConfig
+
+	// Namespace specifies the namespace for job execution.
+	Namespace string
 }
 
 // ResourceConfig holds resource configuration for either requests or limits.
