@@ -19,7 +19,7 @@ const (
 	defaultEvent    = string(api.Wall)
 	flameLong       = `Profile existing applications with low-overhead by generating flame graphs.
 
-These commands help you identify application performance issues. 
+These commands help you identify application performance issues.
 `
 	flameExamples = `
 	# Profile a pod for 5 minutes and save the output as flame.svg file
@@ -106,6 +106,7 @@ func NewFlameCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	cmd.Flags().BoolVar(&targetDetails.DryRun, "dry-run", false, "Simulate profiling")
 	cmd.Flags().StringVar(&targetDetails.Image, "image", "", "Manually choose agent docker image")
 	cmd.Flags().StringVar(&targetDetails.DockerPath, "docker-path", "/var/lib/docker/", "Use a different Docker install path")
+	cmd.Flags().StringVar(&targetDetails.Namespace, "target-namespace", "", "namespace of target pod if differnt from job namespace")
 	cmd.Flags().StringVarP(&targetDetails.Pgrep, "pgrep", "p", "", "name of the target process")
 
 	cmd.Flags().StringVarP(&chosenLang, "lang", "l", "", fmt.Sprintf("Programming language of "+

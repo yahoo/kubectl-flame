@@ -29,7 +29,7 @@ func LaunchFlameJob(targetPod *v1.Pod, cfg *data.FlameConfig, ctx context.Contex
 
 	createJob, err := clientSet.
 		BatchV1().
-		Jobs(cfg.TargetConfig.Namespace).
+		Jobs(cfg.JobConfig.Namespace).
 		Create(ctx, flameJob, metav1.CreateOptions{})
 	if err != nil {
 		return "", nil, err
