@@ -108,5 +108,9 @@ func (r *rubyCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (strin
 		},
 	}
 
+	if cfg.TargetConfig.ServiceAccountName != "" {
+		job.Spec.Template.Spec.ServiceAccountName = cfg.TargetConfig.ServiceAccountName
+	}
+
 	return id, job, nil
 }

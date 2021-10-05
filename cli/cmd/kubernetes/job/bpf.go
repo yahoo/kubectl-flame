@@ -122,5 +122,9 @@ func (b *bpfCreator) create(targetPod *apiv1.Pod, cfg *data.FlameConfig) (string
 		},
 	}
 
+	if cfg.TargetConfig.ServiceAccountName != "" {
+		job.Spec.Template.Spec.ServiceAccountName = cfg.TargetConfig.ServiceAccountName
+	}
+
 	return id, job, nil
 }

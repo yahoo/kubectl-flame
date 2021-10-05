@@ -9,19 +9,20 @@ import (
 )
 
 type TargetDetails struct {
-	Namespace       string
-	PodName         string
-	ContainerName   string
-	ContainerId     string
-	Event           api.ProfilingEvent
-	Duration        time.Duration
-	Id              string
-	FileName        string
-	Alpine          bool
-	DryRun          bool
-	Image           string
-	DockerPath      string
-	Language        api.ProgrammingLanguage
-	Pgrep           string
-	ImagePullSecret string
+	Namespace          string
+	PodName            string
+	ContainerName      string
+	ContainerId        string
+	Event              api.ProfilingEvent
+	Duration           time.Duration
+	Id                 string
+	FileName           string
+	Alpine             bool
+	DryRun             bool
+	Image              string
+	DockerPath         string
+	Language           api.ProgrammingLanguage
+	Pgrep              string
+	ImagePullSecret    string
+	ServiceAccountName string
 }
