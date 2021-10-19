@@ -24,6 +24,8 @@ In order to profile a Java application in pod `mypod` for 1 minute and save the 
 ```shell
 kubectl flame mypod -t 1m --lang java -f /tmp/flamegraph.svg
 ```
+Note that Java is using async-profiler 2 that also supports HTML flamegraph by switching the file extension to `.html`.
+
 ### Profiling Alpine based container
 Profiling Java application in alpine based containers require using `--alpine` flag:
 ```shell
