@@ -17,7 +17,7 @@ var (
 	bpf    = BpfProfiler{}
 	python = PythonProfiler{}
 	ruby   = RubyProfiler{}
-	node   = PerfProfiler{}
+	perf   = PerfProfiler{}
 )
 
 func ForLanguage(lang api.ProgrammingLanguage) (FlameGraphProfiler, error) {
@@ -31,7 +31,7 @@ func ForLanguage(lang api.ProgrammingLanguage) (FlameGraphProfiler, error) {
 	case api.Ruby:
 		return &ruby, nil
 	case api.Node:
-		return &node, nil
+		return &perf, nil
 	default:
 		return nil, fmt.Errorf("could not find profiler for language %s", lang)
 	}

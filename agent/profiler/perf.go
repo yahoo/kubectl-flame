@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	perfLocation             = "/app/perf"
-	flameGraphVizLocation    = "stackvis"
-	rawPerfOutputFile        = "/tmp/perf.out"
-	flameGraphPerfOutputFile = "/tmp/perf.svg"
+	perfLocation                    = "/app/perf"
+	flameGraphPlLocation            = "/app/FlameGraph/flamegraph.pl"
+	flameGraphStackCollapseLocation = "/app/FlameGraph/stackcollapse-perf.pl"
+	rawPerfOutputFile               = "/tmp/perf.out"
+	flameGraphPerfOutputFile        = "/tmp/perf.svg"
 )
 
 type PerfProfiler struct{}
@@ -49,22 +50,38 @@ func (p *PerfProfiler) runProfiler(job *details.ProfilingJob) error {
 	}
 
 	duration := strconv.Itoa(int(job.Duration.Seconds()))
-	cmd := exec.Command(perfLocation, "record", "-p", pid, "-g", "--", "sleep", duration)
+	cmd := exec.Command(perfLocation, "record", "-F99", "-p", pid, "-g", "--", "sleep", duration)
 
 	return cmd.Run()
 }
 
 func (p *PerfProfiler) generateRawOutput(job *details.ProfilingJob) error {
-	f, err := os.Create(rawProfilerOutputFile)
+	f, err := os.Create(rawPerfOutputFile)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	cmd := exec.Command(perfLocation, "script")
-	cmd.Stdout = f
+	generateRawCmd := exec.Command(perfLocation, "script")
+	foldCmd := exec.Command(flameGraphStackCollapseLocation)
+	foldCmd.Stdout = f
 
-	return cmd.Run()
+	foldCmd.Stdin, err = generateRawCmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	err = foldCmd.Start()
+	if err != nil {
+		return err
+	}
+
+	err = generateRawCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return foldCmd.Wait()
 }
 
 func (p *PerfProfiler) generateFlameGraph(job *details.ProfilingJob) error {
@@ -80,7 +97,7 @@ func (p *PerfProfiler) generateFlameGraph(job *details.ProfilingJob) error {
 	}
 	defer outputFile.Close()
 
-	flameGraphCmd := exec.Command(flameGraphVizLocation, "perf")
+	flameGraphCmd := exec.Command(flameGraphPlLocation)
 	flameGraphCmd.Stdin = inputFile
 	flameGraphCmd.Stdout = outputFile
 

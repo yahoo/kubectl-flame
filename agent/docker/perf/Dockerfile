@@ -4,14 +4,15 @@ ADD . /go/src/github.com/VerizonMedia/kubectl-flame
 RUN go get -d -v ./...
 RUN cd agent && go build -o /go/bin/agent
 
-FROM node:16.6-alpine
-RUN apk add --update perf
-RUN npm i -g stackvis@0.5.0
-RUN npm i -g bunyan@1.8.15
+FROM alpine as builder
+RUN apk add --update git
+RUN git clone https://github.com/brendangregg/FlameGraph
 
-RUN mkdir /app
+FROM alpine
+RUN apk add --update perf perl
+RUN mkdir -p /app/FlameGraph
 COPY --from=agentbuild /go/bin/agent /app/agent
 RUN mv /usr/bin/perf /app/perf
-
+COPY --from=builder /FlameGraph /app/FlameGraph
 
 CMD [ "/app/agent" ]
