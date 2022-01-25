@@ -7,10 +7,11 @@ const (
 	Go     ProgrammingLanguage = "go"
 	Python ProgrammingLanguage = "python"
 	Ruby   ProgrammingLanguage = "ruby"
+	Node   ProgrammingLanguage = "node"
 )
 
 var (
-	supportedLangs = []ProgrammingLanguage{Java, Go, Python, Ruby}
+	supportedLangs = []ProgrammingLanguage{Java, Go, Python, Ruby, Node}
 )
 
 func AvailableLanguages() []ProgrammingLanguage {
