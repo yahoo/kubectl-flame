@@ -4,17 +4,14 @@ ADD . /go/src/github.com/VerizonMedia/kubectl-flame
 RUN go get -d -v ./...
 RUN cd agent && go build -o /go/bin/agent
 
-FROM node:16.6-alpine AS perfbuild
+FROM node:16.6-alpine
 RUN apk add --update perf
 RUN npm i -g stackvis@0.5.0
+RUN npm i -g bunyan@1.8.15
 
-FROM node:16.6-alpine
 RUN mkdir /app
 COPY --from=agentbuild /go/bin/agent /app/agent
-COPY --from=perfbuild /usr/bin/perf /app/perf
-COPY --from=perfbuild /usr/local/bin/stackvis /app/stackvis
+RUN mv /usr/bin/perf /app/perf
 
-RUN perf
-RUN stackvis
 
 CMD [ "/app/agent" ]

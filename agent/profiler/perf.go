@@ -12,7 +12,7 @@ import (
 
 const (
 	perfLocation             = "/app/perf"
-	flameGraphVizLocation    = "/app/stackvis"
+	flameGraphVizLocation    = "stackvis"
 	rawPerfOutputFile        = "/tmp/perf.out"
 	flameGraphPerfOutputFile = "/tmp/perf.svg"
 )
