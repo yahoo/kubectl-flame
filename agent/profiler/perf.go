@@ -12,9 +12,11 @@ import (
 
 const (
 	perfLocation                    = "/app/perf"
+	perfRecordOutputFileName        = "/tmp/perf.data"
 	flameGraphPlLocation            = "/app/FlameGraph/flamegraph.pl"
 	flameGraphStackCollapseLocation = "/app/FlameGraph/stackcollapse-perf.pl"
-	rawPerfOutputFile               = "/tmp/perf.out"
+	perfScriptOutputFileName        = "/tmp/perf.out"
+	perfFoldedOutputFileName        = "/tmp/perf.folded"
 	flameGraphPerfOutputFile        = "/tmp/perf.svg"
 )
 
@@ -25,14 +27,19 @@ func (p *PerfProfiler) SetUp(job *details.ProfilingJob) error {
 }
 
 func (p *PerfProfiler) Invoke(job *details.ProfilingJob) error {
-	err := p.runProfiler(job)
+	err := p.runPerfRecord(job)
 	if err != nil {
-		return fmt.Errorf("profiling failed: %s", err)
+		return fmt.Errorf("perf record failed: %s", err)
 	}
 
-	err = p.generateRawOutput(job)
+	err = p.runPerfScript(job)
 	if err != nil {
-		return fmt.Errorf("raw output generation failed: %s", err)
+		return fmt.Errorf("perf script failed: %s", err)
+	}
+
+	err = p.foldPerfOutput(job)
+	if err != nil {
+		return fmt.Errorf("folding perf output failed: %s", err)
 	}
 
 	err = p.generateFlameGraph(job)
@@ -43,49 +50,46 @@ func (p *PerfProfiler) Invoke(job *details.ProfilingJob) error {
 	return utils.PublishFlameGraph(flameGraphPerfOutputFile)
 }
 
-func (p *PerfProfiler) runProfiler(job *details.ProfilingJob) error {
+func (p *PerfProfiler) runPerfRecord(job *details.ProfilingJob) error {
 	pid, err := utils.FindRootProcessId(job)
 	if err != nil {
 		return err
 	}
 
 	duration := strconv.Itoa(int(job.Duration.Seconds()))
-	cmd := exec.Command(perfLocation, "record", "-F99", "-p", pid, "-g", "--", "sleep", duration)
+	cmd := exec.Command(perfLocation, "record", "-p", pid, "-o", perfRecordOutputFileName, "-g", "--", "sleep", duration)
 
 	return cmd.Run()
 }
 
-func (p *PerfProfiler) generateRawOutput(job *details.ProfilingJob) error {
-	f, err := os.Create(rawPerfOutputFile)
+func (p *PerfProfiler) runPerfScript(job *details.ProfilingJob) error {
+	f, err := os.Create(perfScriptOutputFileName)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	generateRawCmd := exec.Command(perfLocation, "script")
-	foldCmd := exec.Command(flameGraphStackCollapseLocation)
-	foldCmd.Stdout = f
+	cmd := exec.Command(perfLocation, "script", "-i", perfRecordOutputFileName)
+	cmd.Stdout = f
 
-	foldCmd.Stdin, err = generateRawCmd.StdoutPipe()
+	return cmd.Run()
+}
+
+func (p *PerfProfiler) foldPerfOutput(job *details.ProfilingJob) error {
+	f, err := os.Create(perfFoldedOutputFileName)
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
-	err = foldCmd.Start()
-	if err != nil {
-		return err
-	}
+	cmd := exec.Command(flameGraphStackCollapseLocation, perfScriptOutputFileName)
+	cmd.Stdout = f
 
-	err = generateRawCmd.Run()
-	if err != nil {
-		return err
-	}
-
-	return foldCmd.Wait()
+	return cmd.Run()
 }
 
 func (p *PerfProfiler) generateFlameGraph(job *details.ProfilingJob) error {
-	inputFile, err := os.Open(rawPerfOutputFile)
+	inputFile, err := os.Open(perfFoldedOutputFileName)
 	if err != nil {
 		return err
 	}
@@ -97,9 +101,9 @@ func (p *PerfProfiler) generateFlameGraph(job *details.ProfilingJob) error {
 	}
 	defer outputFile.Close()
 
-	flameGraphCmd := exec.Command(flameGraphPlLocation)
-	flameGraphCmd.Stdin = inputFile
-	flameGraphCmd.Stdout = outputFile
+	cmd := exec.Command(flameGraphPlLocation)
+	cmd.Stdin = inputFile
+	cmd.Stdout = outputFile
 
-	return flameGraphCmd.Run()
+	return cmd.Run()
 }
