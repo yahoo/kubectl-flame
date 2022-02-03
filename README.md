@@ -65,7 +65,7 @@ Interaction with the target JVM is done via a shared `/tmp` folder.
 Golang support is based on [ebpf profiling](https://en.wikipedia.org/wiki/Berkeley_Packet_Filter).
 Python support is based on [py-spy](https://github.com/benfred/py-spy).
 Ruby support is based on [rbspy](https://rbspy.github.io/).
-NodeJS support is based on [perf](https://perf.wiki.kernel.org/index.php/Main_Page).
+NodeJS support is based on [perf](https://perf.wiki.kernel.org/index.php/Main_Page). In order for Javascript Symbols to be resolved, node process needs to be run with `--perf-basic-prof` flag.
 
 ## Contribute
 Please refer to [the contributing.md file](Contributing.md) for information about how to get involved. We welcome issues, questions, and pull requests.
