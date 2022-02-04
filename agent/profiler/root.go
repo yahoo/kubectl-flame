@@ -2,6 +2,7 @@ package profiler
 
 import (
 	"fmt"
+
 	"github.com/VerizonMedia/kubectl-flame/agent/details"
 	"github.com/VerizonMedia/kubectl-flame/api"
 )
@@ -16,6 +17,7 @@ var (
 	bpf    = BpfProfiler{}
 	python = PythonProfiler{}
 	ruby   = RubyProfiler{}
+	perf   = PerfProfiler{}
 )
 
 func ForLanguage(lang api.ProgrammingLanguage) (FlameGraphProfiler, error) {
@@ -28,6 +30,8 @@ func ForLanguage(lang api.ProgrammingLanguage) (FlameGraphProfiler, error) {
 		return &python, nil
 	case api.Ruby:
 		return &ruby, nil
+	case api.Node:
+		return &perf, nil
 	default:
 		return nil, fmt.Errorf("could not find profiler for language %s", lang)
 	}
