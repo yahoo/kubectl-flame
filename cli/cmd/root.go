@@ -16,7 +16,7 @@ import (
 
 const (
 	defaultDuration = 1 * time.Minute
-	defaultEvent    = string(api.Wall)
+	defaultEvent    = string(api.Cpu)
 	flameLong       = `Profile existing applications with low-overhead by generating flame graphs.
 
 These commands help you identify application performance issues.
