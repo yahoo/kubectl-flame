@@ -6,7 +6,7 @@ RUN cd agent && go build -o /go/bin/agent
 
 FROM rust:1.50 AS rbspybuild
 WORKDIR /
-RUN git clone https://github.com/rbspy/rbspy
+RUN git clone --depth 1 --branch v0.8.1 https://github.com/rbspy/rbspy
 RUN cd rbspy && cargo build --release
 
 FROM bitnami/minideb:stretch
