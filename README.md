@@ -43,6 +43,14 @@ kubectl flame mypod -t 1m --lang go -f /tmp/flamegraph.svg --pgrep go-app
 ```
 Java profiling assumes that the process name is `java`. Use `--pgrep` flag if your process name is different.
 
+### Profiling on clusters running containerd
+
+To run this tool on Kubernetes clusters that use containerd as the runtime engine, you must specify the path to the containerd runtime files:
+
+```shell
+kubectl flame mypod -t 1m --docker-path /run/containerd
+```
+
 ## Installing
 
 ### Krew
