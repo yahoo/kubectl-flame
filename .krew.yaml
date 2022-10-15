@@ -3,7 +3,7 @@ kind: Plugin
 metadata:
   name: flame
 spec:
-  homepage: https://github.com/VerizonMedia/kubectl-flame
+  homepage: https://github.com/yahoo/kubectl-flame
   shortDescription: Generate CPU flame graphs from pods
   version: {{ .TagName }}
   description: |
@@ -11,7 +11,7 @@ spec:
   caveats: |
     Currently supported languages: Go, Java (any JVM based language), Python, Ruby, and NodeJS.
   platforms:
-    - {{addURIAndSha "https://github.com/VerizonMedia/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_darwin_x86_64.tar.gz" .TagName | indent 6 }}
+    - {{addURIAndSha "https://github.com/yahoo/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_darwin_x86_64.tar.gz" .TagName | indent 6 }}
       bin: kubectl-flame
       files:
         - from: kubectl-flame
@@ -22,7 +22,7 @@ spec:
         matchLabels:
           os: darwin
           arch: amd64
-    - {{addURIAndSha "https://github.com/VerizonMedia/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_linux_x86_64.tar.gz" .TagName | indent 6 }}
+    - {{addURIAndSha "https://github.com/yahoo/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_linux_x86_64.tar.gz" .TagName | indent 6 }}
       bin: kubectl-flame
       files:
         - from: kubectl-flame
@@ -33,7 +33,7 @@ spec:
         matchLabels:
           os: linux
           arch: amd64
-    - {{addURIAndSha "https://github.com/VerizonMedia/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_linux_arm64.tar.gz" .TagName | indent 6 }}
+    - {{addURIAndSha "https://github.com/yahoo/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_linux_arm64.tar.gz" .TagName | indent 6 }}
       bin: kubectl-flame
       files:
         - from: kubectl-flame
@@ -44,7 +44,7 @@ spec:
         matchLabels:
           os: linux
           arch: arm64
-    - {{addURIAndSha "https://github.com/VerizonMedia/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_windows_x86_64.zip" .TagName | indent 6 }}
+    - {{addURIAndSha "https://github.com/yahoo/kubectl-flame/releases/download/{{ .TagName }}/kubectl-flame_{{ .TagName }}_windows_x86_64.zip" .TagName | indent 6 }}
       bin: kubectl-flame.exe
       files:
         - from: kubectl-flame.exe
