@@ -3,7 +3,7 @@
 A kubectl plugin that allows you to profile production applications with low-overhead by generating
 [FlameGraphs](http://www.brendangregg.com/flamegraphs.html)
 
-Running `kubectlf-flame` does **not** require any modification to existing pods.
+Running `kubectl-flame` does **not** require any modification to existing pods.
 ## Table of Contents
 
 - [Requirements](#requirements)
