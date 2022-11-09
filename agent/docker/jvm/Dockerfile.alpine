@@ -5,9 +5,10 @@ RUN go get -d -v ./...
 RUN cd agent && go build -o /go/bin/agent
 
 FROM openjdk:8-alpine as asyncprofiler
-RUN apk add build-base git linux-headers
-RUN git clone https://github.com/edeNFed/async-profiler.git
-RUN cd async-profiler && make
+RUN apk add build-base linux-headers curl
+RUN curl -o async-profiler-2.5-linux-musl-x64.tar.gz -L \
+    https://github.com/jvm-profiling-tools/async-profiler/releases/download/v2.5/async-profiler-2.5-linux-musl-x64.tar.gz
+RUN tar -xvf async-profiler-2.5-linux-musl-x64.tar.gz && mv async-profiler-2.5-linux-musl-x64 async-profiler
 
 FROM alpine
 RUN mkdir -p /app/async-profiler/build
