@@ -50,7 +50,7 @@ func DeleteProfilingJob(job *batchv1.Job, targetDetails *data.TargetDetails, ctx
 	deleteStrategy := metav1.DeletePropagationForeground
 	return clientSet.
 		BatchV1().
-		Jobs(targetDetails.Namespace).
+		Jobs(job.Namespace).
 		Delete(ctx, job.Name, metav1.DeleteOptions{
 			PropagationPolicy: &deleteStrategy,
 		})
