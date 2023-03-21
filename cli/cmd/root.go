@@ -32,7 +32,7 @@ These commands help you identify application performance issues.
 	%[1]s flame mypod -f /tmp/flame.svg -n test container1
 
 	# Set custom resource requests and limits for the kubectl-flame pod (default: neither requests nor limits are set)
-	%[1]s flame mypod -f flame.svg -cpu.requests 100m -cpu.limits 200m -mem.requests 100Mi -mem.limits 200Mi
+	%[1]s flame mypod -f flame.svg --cpu.requests 100m --cpu.limits 200m --mem.requests 100Mi --mem.limits 200Mi
 `
 )
 
