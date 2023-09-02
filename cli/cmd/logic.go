@@ -4,7 +4,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
@@ -87,8 +86,8 @@ func Flame(cfg *data.FlameConfig) {
 
 func validatePod(pod *v1.Pod, targetDetails *data.TargetDetails) (string, error) {
 	if pod == nil {
-		return "", errors.New(fmt.Sprintf("Could not find pod %s in Namespace %s",
-			targetDetails.PodName, targetDetails.Namespace))
+		return "", fmt.Errorf("Could not find pod %s in Namespace %s",
+			targetDetails.PodName, targetDetails.Namespace)
 	}
 
 	if len(pod.Spec.Containers) != 1 {
@@ -101,7 +100,7 @@ func validatePod(pod *v1.Pod, targetDetails *data.TargetDetails) (string, error)
 			containerNames = append(containerNames, container.Name)
 		}
 
-		return "", errors.New(fmt.Sprintf("Could not determine container. please specify one of %v", containerNames))
+		return "", fmt.Errorf("Could not determine container. please specify one of %v", containerNames)
 	}
 
 	return pod.Spec.Containers[0].Name, nil
