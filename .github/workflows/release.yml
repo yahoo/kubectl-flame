@@ -11,7 +11,7 @@ jobs:
       uses: actions/checkout@master
     - name: Set env
       id: vars
-      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
     - name: Build JVM Docker Image
       uses: docker/build-push-action@v1
       with:
